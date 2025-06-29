@@ -1,0 +1,335 @@
+---
+title: "LASSO Regression"
+format: 
+  html:
+    theme: cosmo
+    smooth-scroll: true
+    toc: true
+    toc-location: right
+    # self-contained: true
+# author: 
+#     - name: J.I. Seo
+#       affiliations:
+#       - Gyeongguk National University
+#     - name: J.W. Lee
+#       # affiliations:
+#       # - University of Missouri
+      
+number-sections: true
+highlight-style: pygments
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+options(width=200)
+```
+
+> LASSO Regression의 장점
+ 
+- 규제항을 통해 회귀계수를 "0"으로 추정하기 때문에 변수 선택이 가능하다.
+
+
+</br>
+
+> LASSO Regression의 단점
+
+- 예측 변수의 개수가 표본의 크기보다 큰 경우, 볼록 최적화 문제의 특성 때문에 표본의 크기보다 많은 예측 변수를 선택할 수 없다.
+- 예측 변수 사이에 어떤 그룹 구조(쌍별 상관 관계가 매우 높은)가 있을 때, 그룹에서 하나의 예측 변수만 선택한다.
+- 예측 변수의 개수가 표본의 크기보다 큰 상황에서 예측 변수들이 높은 상관관계를 가지고 있을 때, `Ridge Regression`보다 예측 성능이 낮다.
+
+</br>
+
+> 실습 자료 : 1912년 4월 15일 타이타닉호 침몰 당시 탑승객들의 정보를 기록한 데이터셋이며, 총 11개의 변수를 포함하고 있다. 이 자료에서 **Target**은 `Survived`이다.
+
+<center>![](./image/그림_titanic.png)</center>
+
+<br />
+
+<center><img src="./image/Titanic_표.png" width="400" height="400"></center>
+
+<br />
+
+
+
+
+## 데이터 불러오기
+
+
+```{r, eval=F}
+pacman::p_load("data.table", 
+               "tidyverse", 
+               "dplyr", "tidyr",
+               "ggplot2", "GGally",
+               "caret",
+               "doParallel", "parallel")                                # For 병렬 처리
+
+registerDoParallel(cores=detectCores())                                 # 사용할 Core 개수 지정     
+
+titanic <- fread("../Titanic.csv")                                      # 데이터 불러오기
+
+titanic %>%
+  as_tibble
+```
+
+```{r, echo=F}
+pacman::p_load("data.table", 
+               "tidyverse", 
+               "dplyr", "tidyr",
+               "ggplot2", "GGally",
+               "caret",
+               "doParallel", "parallel")                                # For 병렬 처리
+
+registerDoParallel(cores=detectCores())                                 # 사용할 Core 개수 지정     
+
+titanic <- fread(paste(getwd(), "/DATA/Titanic.csv", sep = "/"))              # 데이터 불러오기
+
+titanic %>%
+  as_tibble
+
+```
+
+## 데이터 전처리 I
+
+```{r}
+titanic %<>%
+  data.frame() %>%                                                      # Data Frame 형태로 변환 
+  mutate(Survived = ifelse(Survived == 1, "yes", "no"))                 # Target을 문자형 변수로 변환
+
+# 1. Convert to Factor
+fac.col <- c("Pclass", "Sex",
+             # Target
+             "Survived")
+
+titanic <- titanic %>% 
+  mutate_at(fac.col, as.factor)                                         # 범주형으로 변환
+
+glimpse(titanic)                                                        # 데이터 구조 확인
+
+# 2. Generate New Variable
+titanic <- titanic %>%
+  mutate(FamSize = SibSp + Parch)                                       # "FamSize = 형제 및 배우자 수 + 부모님 및 자녀 수"로 가족 수를 의미하는 새로운 변수
+
+glimpse(titanic)                                                        # 데이터 구조 확인
+
+# 3. Select Variables used for Analysis
+titanic1 <- titanic %>% 
+  select(Survived, Pclass, Sex, Age, Fare, FamSize)                     # 분석에 사용할 변수 선택
+
+titanic1 %>%
+  as_tibble
+```
+
+## 데이터 탐색
+
+```{r}
+ggpairs(titanic1,                                        
+        aes(colour = Survived)) +                         # Target의 범주에 따라 색깔을 다르게 표현
+  theme_bw()
+
+ggpairs(titanic1,                                     
+        aes(colour = Survived, alpha = 0.8)) +            # Target의 범주에 따라 색깔을 다르게 표현
+  scale_colour_manual(values = c("#00798c", "#d1495b")) + # 특정 색깔 지정
+  scale_fill_manual(values = c("#00798c", "#d1495b")) +   # 특정 색깔 지정
+  theme_bw()
+```
+
+
+## 데이터 분할
+
+```{r}
+# Partition (Training Dataset : Test Dataset = 7:3)
+y      <- titanic1$Survived                             # Target
+
+set.seed(200)
+ind    <- createDataPartition(y, p = 0.7, list  =T)     # Index를 이용하여 7:3으로 분할
+titanic.trd <- titanic1[ind$Resample1,]                 # Training Dataset
+titanic.ted <- titanic1[-ind$Resample1,]                # Test Dataset
+```
+
+## 데이터 전처리 II
+
+```{r}
+# Imputation
+titanic.trd.Imp <- titanic.trd %>% 
+  mutate(Age = replace_na(Age, mean(Age, na.rm = TRUE)))                 # 평균으로 결측값 대체
+
+titanic.ted.Imp <- titanic.ted %>% 
+  mutate(Age = replace_na(Age, mean(titanic.trd$Age, na.rm = TRUE)))     # Training Dataset을 이용하여 결측값 대체
+
+glimpse(titanic.trd.Imp)                                                 # 데이터 구조 확인
+glimpse(titanic.ted.Imp)                                                 # 데이터 구조 확인
+```
+
+
+## 모형 훈련
+
+Package `"caret"`은 통합 API를 통해 R로 기계 학습을 실행할 수 있는 매우 실용적인 방법을 제공한다. Package `"caret"`를 통해 `LASSO Regression`을 수행하기 위해 옵션 `method`에 다양한 방법(Ex: `"lasso"`, `"blasso"` 등)을 입력할 수 있지만, 대부분 회귀 문제에 대해서만 분석이 가능하다. 분류와 회귀 문제 모두 가능한 `"glmnet"`을 이용하려면 옵션 `tuneGrid = expand.grid()`을 통해 탐색하고자 하는 초모수 `lambda`의 범위를 직접 지정해줘야 한다. 
+
+```{r}
+fitControl <- trainControl(method = "cv", number = 5,                 # 5-Fold Cross Validation (5-Fold CV)
+                           allowParallel = TRUE)                      # 병렬 처리
+
+set.seed(200)                                                         # For CV
+lasso.fit <- train(Survived ~ ., data = titanic.trd.Imp, 
+                   trControl = fitControl ,
+                   method = "glmnet",
+                   tuneGrid = expand.grid(alpha = 1,                  # For LASSO Regression
+                                          lambda = seq(0, 1, 0.001)), # lambda의 탐색 범위
+                   preProc = c("center", "scale"))                    # Standardization for 예측 변수
+
+lasso.fit
+plot(lasso.fit)                                                       # Plot
+
+lasso.fit$bestTune                                                    # lambda의 최적값
+```
+
+`Result!` `lambda` = 0.022일 때 정확도가 가장 높은 것을 알 수 있으며, `lambda` = 0.022를 가지는 모형을 최적의 훈련된 모형으로 선택한다.
+
+```{r}
+round(coef(lasso.fit$finalModel, lasso.fit$bestTune$lambda), 3)       # lambda의 최적값에 대한 회귀계수 추정치
+```
+
+`Result!` 데이터 "titanic.trd.Imp"의 Target "Survived"은 "no"와 "yes" 2개의 클래스를 가지며, "Factor" 변환하면 알파벳순으로 수준을 부여하기 때문에 "yes"가 두 번째 클래스가 된다. 즉, "yes"에 속할 확률(= 탑승객이 생존할 확률)을 $p$라고 할 때, 추정된 회귀계수를 이용하여 다음과 같은 모형식을 얻을 수 있다.
+$$
+\begin{align*}
+\log{\frac{p}{1-p}} = &-0.601 - 0.036 Z_{\text{Pclass2}} - 0.690 Z_{\text{Pclass3}} -1.052 Z_{\text{Sexmale}} \\
+                      &-0.193 Z_{\text{Age}} +0.112 Z_{\text{Fare}} - 0.128 Z_{\text{FamSize}}
+\end{align*}
+$$
+여기서, $Z_{\text{예측 변수}}$는 표준화한 예측 변수를 의미한다.  
+범주형 예측 변수("Pclass", "Sex")는 더미 변환이 수행되었는데, 예를 들어, `Pclass2`는 탑승객의 티켓 등급이 2등급인 경우 "1"값을 가지고 2등급이 아니면 "0"값을 가진다.
+
+
+## 모형 평가
+
+`Caution!` 모형 평가를 위해 `Test Dataset`에 대한 `예측 class/확률` 이 필요하며, 함수 `predict()`를 이용하여 생성한다. 
+```{r}
+# 예측 class 생성
+test.lasso.class <- predict(lasso.fit, 
+                            newdata = titanic.ted.Imp[,-1])   # Test Dataset including Only 예측 변수  
+
+test.lasso.class %>%                                      
+  as_tibble
+```
+
+<br />
+
+###  ConfusionMatrix
+
+```{r}
+CM   <- caret::confusionMatrix(test.lasso.class, titanic.ted.Imp$Survived, 
+                               positive = "yes")        # confusionMatrix(예측 class, 실제 class, positive = "관심 class")
+CM
+```
+
+<br />
+
+### ROC 곡선
+
+```{r}
+# 예측 확률 생성
+test.lasso.prob <- predict(lasso.fit, 
+                           newdata = titanic.ted.Imp[,-1],# Test Dataset including Only 예측 변수 
+                           type = "prob")                 # 예측 확률 생성
+
+test.lasso.prob %>%                                                         
+  as_tibble
+```
+
+```{r}
+test.lasso.prob <- test.lasso.prob[,2]                 # "Survived = yes"에 대한 예측 확률
+
+ac  <- titanic.ted.Imp$Survived                        # Test Dataset의 실제 class 
+pp  <- as.numeric(test.lasso.prob)                     # 예측 확률을 수치형으로 변환
+```
+
+#### Package "pROC"
+
+```{r}
+pacman::p_load("pROC")
+
+lasso.roc  <- roc(ac, pp, plot = T, col = "gray")      # roc(실제 class, 예측 확률)
+auc        <- round(auc(lasso.roc), 3)
+legend("bottomright", legend = auc, bty = "n")
+
+```
+
+`Caution!` Package `"pROC"`를 통해 출력한 ROC 곡선은 다양한 함수를 이용해서 그래프를 수정할 수 있다.
+
+```{r}
+# 함수 plot.roc() 이용
+plot.roc(lasso.roc,   
+         col="gray",                                   # Line Color
+         print.auc = TRUE,                             # AUC 출력 여부
+         print.auc.col = "red",                        # AUC 글씨 색깔
+         print.thres = TRUE,                           # Cutoff Value 출력 여부
+         print.thres.pch = 19,                         # Cutoff Value를 표시하는 도형 모양
+         print.thres.col = "red",                      # Cutoff Value를 표시하는 도형의 색깔
+         auc.polygon = TRUE,                           # 곡선 아래 면적에 대한 여부
+         auc.polygon.col = "gray90")                   # 곡선 아래 면적의 색깔
+```
+
+
+```{r}
+# 함수 ggroc() 이용
+ggroc(lasso.roc) +
+annotate(geom = "text", x = 0.9, y = 1.0,
+label = paste("AUC = ", auc),
+size = 5,
+color="red") +
+theme_bw()
+```
+
+
+
+#### Package "Epi"
+
+```{r}
+pacman::p_load("Epi")       
+# install_version("etm", version = "1.1", repos = "http://cran.us.r-project.org")
+
+ROC(pp, ac, plot = "ROC")                              # ROC(예측 확률, 실제 class)  
+
+```
+
+#### Package "ROCR"
+
+```{r}
+pacman::p_load("ROCR")
+
+lasso.pred <- prediction(pp, ac)                       # prediction(예측 확률, 실제 class) 
+
+lasso.perf <- performance(lasso.pred, "tpr", "fpr")    # performance(, "민감도", "1-특이도")                      
+plot(lasso.perf, col = "gray")                         # ROC Curve
+
+perf.auc   <- performance(lasso.pred, "auc")           # AUC
+auc        <- attributes(perf.auc)$y.values
+legend("bottomright", legend = auc, bty = "n")
+```
+
+<br />
+
+### 향상 차트
+
+#### Package "ROCR"
+
+```{r}
+lasso.perf <- performance(lasso.pred, "lift", "rpp")   # Lift Chart                      
+plot(lasso.perf, main = "lift curve",
+     colorize = T,                                     # Coloring according to cutoff 
+     lwd = 2) 
+
+```
+
+
+```{r, eval=F, echo=F, include=FALSE}
+#### **2) Package "lift"**
+
+pacman::p_load("lift")
+
+ac.numeric <- ifelse(UB.ted$Personal.Loan == "yes", 1, 0)             # Target을 수치형으로 변환
+
+plotLift(test.logis.prob, ac.numeric, cumulative = T, n.buckets = 24) # plotLift(7-2에서 생성한 예측 확률, 실제 class)
+TopDecileLift(test.logis.prob, ac.numeric)		                        # Top 10%의 향상도 출력
+
+```

@@ -1,0 +1,40 @@
+project:
+  type: book
+  output-dir: docs
+
+book:
+  title: Machine Learning with Hyperparameter Tuning
+  author: Young Eun Jeon, Jeong-Wook Lee, and Jung-In Seo
+  repo-url: https://github.com/JJJJYE/ML_book
+  repo-branch: master
+  repo-actions: [issue]
+  chapters:
+    - part: index.qmd
+   
+      chapters: 
+        - KNN.qmd
+        - Clustering.qmd
+        - Decision_tree.qmd
+        - SVM_li.qmd
+        - SVM_po.qmd
+        - SVM_rd.qmd
+        - LASSO.qmd
+        - Ridge.qmd
+        - Elasticnet.qmd
+        - RF.qmd
+        - AdaBoost.qmd
+        - GBM.qmd
+        - XGBoost.qmd
+
+format:
+  html:
+    toc: true
+    number-sections: true
+    theme: cosmo
+    css: styles/styles.css
+    author-meta:  Young Eun Jeon, Jeong-Wook Lee, and Jung-In Seo
+    
+    smooth-scroll: true
+    toc-location: right
+    highlight-style: pygments
+    callout-appearance: simple

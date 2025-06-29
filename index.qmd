@@ -1,0 +1,36 @@
+---
+title: "Welcome"
+format: html
+number-sections: false
+editor: visual
+author:
+    - name: Y.E. Jeon
+      affiliations:
+      - Gyeongkuk National University
+    - name: J.W. Lee
+      affiliations:
+      - University of Missouri
+    - name: J.I. Seo
+      affiliations:
+      - Gyeongkuk National University
+---
+
+------------------------------------------------------------------------
+
+# About
+
+This book offers a practical, hands-on guide to applying a wide range of machine learning algorithms using the R `caret` package, with a strong emphasis on **hyperparameter tuning** and **model optimization**.
+
+Rather than simply listing algorithms, we focus on how to effectively implement, tune, and evaluate models in a systematic way using a unified workflow. Covering both supervised and unsupervised learning methods, this book walks readers through:
+
+-   The theoretical foundations and practical motivations behind each algorithm\
+-   Model training and resampling strategies using `caret`\
+-   Hyperparameter tuning with grid search and cross-validation\
+-   Performance evaluation and comparison across models\
+-   Fully reproducible code examples using real-world datasets
+
+We explore essential machine learning techniques such as **K-Nearest Neighbors, Decision Trees, Support Vector Machines, LASSO and Ridge Regression, Elastic Net, Random Forests, Gradient Boosting, AdaBoost, and XGBoost**, all within a consistent and structured modeling framework.
+
+This book is designed for **students, researchers, and data practitioners** who want to develop a solid understanding of machine learning workflows in R, especially those who aim to go beyond basic modeling and gain insight into how **hyperparameter choices influence model performance**.
+
+By the end of this book, readers will be able to confidently build, tune, and evaluate predictive models using best practices in machine learning with R.
