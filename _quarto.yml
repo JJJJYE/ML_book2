@@ -5,7 +5,7 @@ project:
 book:
   title: Machine Learning with Hyperparameter Tuning
   author: Young Eun Jeon, Jeong-Wook Lee, and Jung-In Seo
-  repo-url: https://github.com/JJJJYE/ML_book
+  repo-url: https://github.com/JJJJYE/ML_book2
   repo-branch: master
   repo-actions: [issue]
   chapters:

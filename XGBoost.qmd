@@ -2,9 +2,7 @@
 title: "XGBoost"
 format: 
   html:
-    theme: 
-      light: Flatly
-      dark: darkly
+    theme: cosmo
     smooth-scroll: true
     toc: true
     toc-location: right

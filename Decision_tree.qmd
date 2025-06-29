@@ -41,7 +41,7 @@ options(width=200)
 
 <center><img src="./image/Titanic_표.png" width="400" height="400"></center>
 
-
+</br>
 
 ## 데이터 불러오기
 
