@@ -13,6 +13,8 @@ author:
     - name: J.I. Seo
       affiliations:
       - Gyeongkuk National University
+resources:
+  - DATA/**
 ---
 
 ------------------------------------------------------------------------
@@ -34,3 +36,5 @@ We explore essential machine learning techniques such as **K-Nearest Neighbors, 
 This book is designed for **students, researchers, and data practitioners** who want to develop a solid understanding of machine learning workflows in R, especially those who aim to go beyond basic modeling and gain insight into how **hyperparameter choices influence model performance**.
 
 By the end of this book, readers will be able to confidently build, tune, and evaluate predictive models using best practices in machine learning with R.
+
+※ Download Example Data: [Here](https://jjjjye.github.io/ML_book2/DATA/Titanic.csv)
