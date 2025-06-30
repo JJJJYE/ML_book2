@@ -639,21 +639,21 @@ db.test.mean=0.5285825</code></pre>
 <span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>kMeansTuningData<span class="sc">$</span>data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   centers     algorithm db.test.mean iteration exec.time
-1        3         Lloyd    0.7914754         1      0.34
-2        4         Lloyd    0.7204947         2      0.35
-3        5         Lloyd    0.7140210         3      0.37
-4        6         Lloyd    0.6604494         4      0.37
-5        7         Lloyd    0.5892118         5      0.39
-6        3      MacQueen    0.7662724         6      0.36
-7        4      MacQueen    0.7349811         7      0.04
-8        5      MacQueen    0.7286601         8      0.04
-9        6      MacQueen    0.7524750         9      0.06
-10       7      MacQueen    0.5848960        10      0.06
-11       3 Hartigan-Wong    0.7662724        11      0.05
-12       4 Hartigan-Wong    0.7349811        12      0.07
-13       5 Hartigan-Wong    0.7267509        13      0.09
-14       6 Hartigan-Wong    0.7990965        14      0.11
-15       7 Hartigan-Wong    0.5285825        15      0.11</code></pre>
+1        3         Lloyd    0.7914754         1      0.58
+2        4         Lloyd    0.7204947         2      0.72
+3        5         Lloyd    0.7140210         3      0.70
+4        6         Lloyd    0.6604494         4      0.61
+5        7         Lloyd    0.5892118         5      0.62
+6        3      MacQueen    0.7662724         6      0.66
+7        4      MacQueen    0.7349811         7      0.06
+8        5      MacQueen    0.7286601         8      0.08
+9        6      MacQueen    0.7524750         9      0.09
+10       7      MacQueen    0.5848960        10      0.08
+11       3 Hartigan-Wong    0.7662724        11      0.09
+12       4 Hartigan-Wong    0.7349811        12      0.08
+13       5 Hartigan-Wong    0.7267509        13      0.11
+14       6 Hartigan-Wong    0.7990965        14      0.12
+15       7 Hartigan-Wong    0.5285825        15      0.12</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 데이터 구조 변환</span></span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>TuningData <span class="ot">&lt;-</span> <span class="fu">pivot_longer</span>(kMeansTuningData<span class="sc">$</span>data,</span>
@@ -667,21 +667,21 @@ db.test.mean=0.5285825</code></pre>
 <pre><code># A tibble: 15 × 6
    centers algorithm     iteration exec.time Metric       Value
      &lt;int&gt; &lt;chr&gt;             &lt;int&gt;     &lt;dbl&gt; &lt;chr&gt;        &lt;dbl&gt;
- 1       3 Lloyd                 1    0.340  db.test.mean 0.791
- 2       4 Lloyd                 2    0.35   db.test.mean 0.720
- 3       5 Lloyd                 3    0.37   db.test.mean 0.714
- 4       6 Lloyd                 4    0.37   db.test.mean 0.660
- 5       7 Lloyd                 5    0.39   db.test.mean 0.589
- 6       3 MacQueen              6    0.360  db.test.mean 0.766
- 7       4 MacQueen              7    0.0400 db.test.mean 0.735
- 8       5 MacQueen              8    0.0400 db.test.mean 0.729
- 9       6 MacQueen              9    0.0600 db.test.mean 0.752
-10       7 MacQueen             10    0.0600 db.test.mean 0.585
-11       3 Hartigan-Wong        11    0.0500 db.test.mean 0.766
-12       4 Hartigan-Wong        12    0.0700 db.test.mean 0.735
-13       5 Hartigan-Wong        13    0.0900 db.test.mean 0.727
-14       6 Hartigan-Wong        14    0.110  db.test.mean 0.799
-15       7 Hartigan-Wong        15    0.110  db.test.mean 0.529</code></pre>
+ 1       3 Lloyd                 1    0.580  db.test.mean 0.791
+ 2       4 Lloyd                 2    0.72   db.test.mean 0.720
+ 3       5 Lloyd                 3    0.7    db.test.mean 0.714
+ 4       6 Lloyd                 4    0.61   db.test.mean 0.660
+ 5       7 Lloyd                 5    0.620  db.test.mean 0.589
+ 6       3 MacQueen              6    0.66   db.test.mean 0.766
+ 7       4 MacQueen              7    0.0600 db.test.mean 0.735
+ 8       5 MacQueen              8    0.0800 db.test.mean 0.729
+ 9       6 MacQueen              9    0.0900 db.test.mean 0.752
+10       7 MacQueen             10    0.0800 db.test.mean 0.585
+11       3 Hartigan-Wong        11    0.0900 db.test.mean 0.766
+12       4 Hartigan-Wong        12    0.0800 db.test.mean 0.735
+13       5 Hartigan-Wong        13    0.110  db.test.mean 0.727
+14       6 Hartigan-Wong        14    0.120  db.test.mean 0.799
+15       7 Hartigan-Wong        15    0.120  db.test.mean 0.529</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(TuningData, <span class="fu">aes</span>(centers, Value, <span class="at">col =</span> algorithm)) <span class="sc">+</span></span>
 <span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> Metric, <span class="at">scales =</span> <span class="st">"free_y"</span>) <span class="sc">+</span></span>

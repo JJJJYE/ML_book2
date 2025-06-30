@@ -37,4 +37,4 @@ This book is designed for **students, researchers, and data practitioners** who 
 
 By the end of this book, readers will be able to confidently build, tune, and evaluate predictive models using best practices in machine learning with R.
 
-※ Download Example Data: [Here](https://jjjjye.github.io/ML_book2/DATA/Titanic.csv)
+※[Download Example Data](https://jjjjye.github.io/ML_book2/DATA/Titanic.csv)
